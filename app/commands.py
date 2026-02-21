@@ -31,11 +31,27 @@ def pwd(_):
     sys.stdout.write(os.getcwd()+'\n')
     return 0
 
+def cd(argv):
+    if len(argv) < 2: cd(["cd","~"])
+    try:
+        os.chdir(os.path.expanduser(argv[1]))
+    except FileNotFoundError:
+        sys.stdout.write('cd: '+argv[1]+': No such file or directory\n')
+        return 1
+    except PermissionError:
+        sys.stdout.write('cd: '+argv[1]+': Permission denied\n')
+        return 1
+    except NotADirectoryError:
+        sys.stdout.write('cd: '+argv[1]+': Not a directory\n')
+        return 1
+    return 0
+
 BUILTINS: dict[str,Callable] = {
     "which": which,
     "exit": shell_exit,
     "echo": echo,
-    "pwd": pwd
+    "pwd": pwd,
+    "cd": cd
 }
 
 def shell_type(argv):
