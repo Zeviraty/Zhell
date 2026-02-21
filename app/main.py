@@ -2,15 +2,9 @@ import sys
 from . import commands 
 from typing import Callable
 
-BUILTINS: dict[str,Callable] = {
-    "which": commands.which,
-    "exit": commands.shell_exit,
-    "echo": commands.echo
-}
-
 def get_command(cmd: list[str]) -> tuple[bool,Callable[[list[str]],int]]:
-    if cmd[0] in BUILTINS.keys():
-        return (True,BUILTINS[cmd[0]])
+    if cmd[0] in commands.BUILTINS.keys():
+        return (True,commands.BUILTINS[cmd[0]])
     else:
         return (False,lambda x: exit(x[0]))
 
