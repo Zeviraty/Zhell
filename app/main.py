@@ -1,5 +1,5 @@
 import sys
-import commands 
+from . import commands 
 
 BUILTINS = {
     "which": commands.which
