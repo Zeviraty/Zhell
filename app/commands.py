@@ -39,7 +39,7 @@ def shell_type(argv):
         sys.stdout.write(argv[1]+' is a shell builtin\n')
         return 0
 
-    path = find_command(argv[0])
+    path = find_command(argv[1])
     if path[0] == True:
         sys.stdout.write(argv[1]+' is '+path[1]+'\n')
         return 0
