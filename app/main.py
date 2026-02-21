@@ -16,7 +16,6 @@ def main():
 
     uin = input()
     cmd = get_command(uin.split(" "))
-    sys.stdout.write("\n")
 
     if cmd[0] == True:
         pass
