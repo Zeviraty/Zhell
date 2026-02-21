@@ -5,6 +5,7 @@ from typing import Callable
 BUILTINS: dict[str,Callable] = {
     "which": commands.which,
     "exit": commands.shell_exit,
+    "echo": commands.echo
 }
 
 def get_command(cmd: list[str]) -> tuple[bool,Callable[[list[str]],int]]:
