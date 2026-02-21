@@ -12,15 +12,16 @@ def get_command(cmd: list[str]) -> tuple:
         return (False,{})
 
 def main():
-    sys.stdout.write("$ ")
+    while True:
+        sys.stdout.write("$ ")
 
-    uin = input()
-    cmd = get_command(uin.split(" "))
+        uin = input()
+        cmd = get_command(uin.split(" "))
 
-    if cmd[0] == True:
-        pass
-    else:
-        sys.stdout.write(f"{uin}: command not found")
+        if cmd[0] == True:
+            pass
+        else:
+            sys.stdout.write(f"{uin}: command not found")
 
 
 if __name__ == "__main__":
