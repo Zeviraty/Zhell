@@ -27,10 +27,15 @@ def echo(argv):
     sys.stdout.write(' '.join(argv[1:]) + '\n')
     return 0
 
+def pwd(_):
+    sys.stdout.write(os.getcwd()+'\n')
+    return 0
+
 BUILTINS: dict[str,Callable] = {
     "which": which,
     "exit": shell_exit,
     "echo": echo,
+    "pwd": pwd
 }
 
 def shell_type(argv):
