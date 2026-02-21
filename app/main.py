@@ -2,6 +2,7 @@ import sys
 from . import commands 
 from typing import Callable
 import os
+import shlex
 
 def run_command(path:str) -> Callable[[list[str]],int]:
     def command(argv:list[str]) -> int:
@@ -31,7 +32,7 @@ def main():
     while True:
         sys.stdout.write("$ ")
 
-        uin = input().split(" ")
+        uin = shlex.split(input())
         cmd = get_command(uin)
 
         if cmd[0] == True:
