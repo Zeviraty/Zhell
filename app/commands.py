@@ -8,6 +8,7 @@ def find_command(cmd: str) -> tuple[bool, str]:
 
     path = path.split(os.pathsep)
     for directory in path:
+        if not os.path.exists(directory): continue
         files = os.listdir(directory)
         if cmd in files:
             path = os.path.join(directory,cmd)
