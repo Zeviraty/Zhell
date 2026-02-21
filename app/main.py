@@ -21,7 +21,7 @@ def main():
         if cmd[0] == True:
             pass
         else:
-            sys.stdout.write(f"{uin}: command not found")
+            sys.stdout.write(f"{uin}: command not found\n")
 
 
 if __name__ == "__main__":
