@@ -58,16 +58,18 @@ def completer(text: str, state: int) -> str | None:
         return None
 
 def display_matches(substitution, matches, _):
-    print()
-    clean_matches = [m.rstrip() for m in matches]
-    print("  ".join(clean_matches))
-    print("$ " + readline.get_line_buffer(), end="")
+    print("display_matches")
+    sys.stdout.write("\n")
+    sys.stdout.write("  ".join(sorted(matches)) + "\n")
+    sys.stdout.write("$ " + readline.get_line_buffer())
     sys.stdout.flush()
 
+readline.set_completer(completer)
+readline.parse_and_bind('tab: rl_complete')
+readline.set_completer_delims(" \t\n;")
+readline.set_completion_display_matches_hook(display_matches)
+
 def main():
-    readline.set_completer(completer)
-    readline.parse_and_bind('tab: rl_complete')
-    readline.set_completion_display_matches_hook(display_matches)
     while True:
         try: uin = shlex.split(input("$ "))
         except EOFError: return
