@@ -2,16 +2,27 @@ import sys
 from typing import Callable
 import os
 
-def find_command(cmd: str) -> tuple[bool, str]:
+CACHED_PATH: str | None = None
+PATH_FILES: dict[str,list[str]] = {}
+
+def get_path_files() -> dict[str,list[str]]:
+    global CACHED_PATH, PATH_FILES
     path = os.environ.get("PATH")
     if path == None: print("PATH could not be found"); exit(1)
+    if path == CACHED_PATH: return PATH_FILES
+    split_path = path.split(os.pathsep)
 
-    path = path.split(os.pathsep)
-    for directory in path:
+    for directory in split_path:
         if not os.path.exists(directory): continue
-        files = os.listdir(directory)
-        if cmd in files:
-            path = os.path.join(directory,cmd)
+        PATH_FILES[directory] = os.listdir(directory)
+
+    CACHED_PATH = path
+    return PATH_FILES
+
+def find_command(cmd: str) -> tuple[bool, str]:
+    for folder in get_path_files().items():
+        if cmd in folder[1]:
+            path = os.path.join(folder[0],cmd)
             if os.access(path, os.X_OK): return (True, path)
     return (False, "")
 

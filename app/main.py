@@ -29,33 +29,60 @@ def get_command(cmd: list[str]) -> tuple[bool,Callable[[list[str]],int]]:
 
     return (False,lambda x: exit(x[0]))
 
-def completer(text: str, state: int) -> str | None:
-    try:
-        buffer = readline.get_line_buffer()
-        try: line = shlex.split(buffer)
-        except ValueError: return None
+TAB_COUNT = 0
+LAST_BUFFER = ""
+CACHED_MATCHES = []
 
-        if len(line) > 1: return None
+def completer(text: str, state: int):
+    global TAB_COUNT, LAST_BUFFER, CACHED_MATCHES
 
-        matches = [
-            cmd for cmd in commands.BUILTINS.keys()
-            if cmd.startswith(text)
-        ]
+    if state != 0: return None
 
-        path = os.environ.get("PATH")
-        if path == None: print("PATH could not be found"); exit(1)
+    buffer = readline.get_line_buffer()
 
-        path = path.split(os.pathsep)
-        for directory in path:
-            if not os.path.exists(directory): continue
-            files = os.listdir(directory)
-            for file in files:
-                if file.startswith(text): matches.append(file)
+    if readline.get_begidx() != 0: return None
 
-        return matches[state] +" " if state < len(matches) else None
-    except Exception as e:
-        print("Completer crashed:", e)
+    if buffer != LAST_BUFFER:
+        TAB_COUNT = 0
+        LAST_BUFFER = buffer
+
+    matches = []
+
+    for cmd in commands.BUILTINS.keys():
+        if cmd.startswith(text):
+            matches.append(cmd)
+
+    for _, files in commands.get_path_files().items():
+        for file in files:
+            if file.startswith(text):
+                matches.append(file)
+
+    matches = sorted(set(matches))
+    CACHED_MATCHES = matches
+
+    if not matches:
         return None
+
+    if len(matches) == 1:
+        TAB_COUNT = 0
+        return matches[0] + " "
+
+    TAB_COUNT += 1
+
+    if TAB_COUNT == 1:
+        sys.stdout.write("\x07")
+        sys.stdout.flush()
+        return None
+
+    if TAB_COUNT == 2:
+        sys.stdout.write("\n")
+        sys.stdout.write("  ".join(matches) + "\n")
+        sys.stdout.write("$ " + buffer)
+        sys.stdout.flush()
+        TAB_COUNT = 0
+        return None
+
+    return None
 
 def display_matches(substitution, matches, _):
     print("display_matches")
@@ -64,13 +91,15 @@ def display_matches(substitution, matches, _):
     sys.stdout.write("$ " + readline.get_line_buffer())
     sys.stdout.flush()
 
-readline.set_completer(completer)
-readline.parse_and_bind('tab: rl_complete')
-readline.set_completer_delims(" \t\n;")
-readline.set_completion_display_matches_hook(display_matches)
-
 def main():
+    commands.get_path_files()
+    readline.set_completer(completer)
+    readline.parse_and_bind('tab: rl_complete')
+    readline.set_completer_delims(" \t\n;")
+    #readline.set_completion_display_matches_hook(display_matches)
     while True:
+        sys.stdout.flush()
+        sys.stderr.flush()
         try: uin = shlex.split(input("$ "))
         except EOFError: return
         if not uin: continue
