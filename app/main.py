@@ -41,6 +41,17 @@ def completer(text: str, state: int) -> str | None:
             cmd for cmd in commands.BUILTINS.keys()
             if cmd.startswith(text)
         ]
+
+        path = os.environ.get("PATH")
+        if path == None: print("PATH could not be found"); exit(1)
+
+        path = path.split(os.pathsep)
+        for directory in path:
+            if not os.path.exists(directory): continue
+            files = os.listdir(directory)
+            for file in files:
+                if file.startswith(text): matches.append(file)
+
         return matches[state] +" " if state < len(matches) else None
     except Exception as e:
         print("Completer crashed:", e)
