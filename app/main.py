@@ -41,7 +41,7 @@ def completer(text: str, state: int) -> str | None:
             cmd for cmd in commands.BUILTINS.keys()
             if cmd.startswith(text)
         ]
-        return matches[state] if state < len(matches) else None
+        return matches[state] +" " if state < len(matches) else None
     except Exception as e:
         print("Completer crashed:", e)
         return None
