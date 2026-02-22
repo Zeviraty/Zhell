@@ -3,6 +3,7 @@ from . import commands
 from typing import Callable
 import os
 import shlex
+import readline
 
 def run_command(path:str) -> Callable[[list[str]],int]:
     def command(argv:list[str]) -> int:
@@ -28,11 +29,30 @@ def get_command(cmd: list[str]) -> tuple[bool,Callable[[list[str]],int]]:
 
     return (False,lambda x: exit(x[0]))
 
-def main():
-    while True:
-        sys.stdout.write("$ ")
+def completer(text: str, state: int) -> str | None:
+    try:
+        buffer = readline.get_line_buffer()
+        try: line = shlex.split(buffer)
+        except ValueError: return None
 
-        uin = shlex.split(input())
+        if len(line) > 1: return None
+
+        matches = [
+            cmd for cmd in commands.BUILTINS.keys()
+            if cmd.startswith(text)
+        ]
+        return matches[state] if state < len(matches) else None
+    except Exception as e:
+        print("Completer crashed:", e)
+        return None
+
+def main():
+    readline.set_completer(completer)
+    readline.parse_and_bind("tab: complete")
+    while True:
+        try: uin = shlex.split(input("$ "))
+        except EOFError: return
+        if not uin: continue
         cmd = get_command(uin)
 
         if cmd[0] == True:
