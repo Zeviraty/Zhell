@@ -57,9 +57,17 @@ def completer(text: str, state: int) -> str | None:
         print("Completer crashed:", e)
         return None
 
+def display_matches(substitution, matches, _):
+    print()
+    clean_matches = [m.rstrip() for m in matches]
+    print("  ".join(clean_matches))
+    print("$ " + readline.get_line_buffer(), end="")
+    sys.stdout.flush()
+
 def main():
     readline.set_completer(completer)
-    readline.parse_and_bind("tab: complete")
+    readline.parse_and_bind('tab: rl_complete')
+    readline.set_completion_display_matches_hook(display_matches)
     while True:
         try: uin = shlex.split(input("$ "))
         except EOFError: return
