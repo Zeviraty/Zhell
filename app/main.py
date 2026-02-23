@@ -16,29 +16,56 @@ def lcp(v: list[str]) -> str:
         ans+=first[i]
     return ans 
 
-def run_command(path:str) -> Callable[[list[str]],int]:
-    def command(argv:list[str]) -> int:
+def run_command(path: str, inputfd=0, outputfd=1):
+    def command(argv: list[str]) -> int:
         pid = os.fork()
 
         if pid == 0:
             try:
+                if inputfd != 0:
+                    os.dup2(inputfd, 0)
+                if outputfd != 1:
+                    os.dup2(outputfd, 1)
+
+                if inputfd not in (0, 1):
+                    os.close(inputfd)
+                if outputfd not in (0, 1):
+                    os.close(outputfd)
+
                 os.execv(path, argv)
-            except Exception as _:
+            except Exception:
                 os._exit(1)
         else:
-            _, status = os.waitpid(pid, 0)
-            return os.WEXITSTATUS(status)
+            return pid
     return command
 
-def get_command(cmd: list[str]) -> tuple[bool,Callable[[list[str]],int]]:
-    if cmd[0] in commands.BUILTINS.keys():
-        return (True,commands.BUILTINS[cmd[0]])
-    
-    path = commands.find_command(cmd[0])
-    if path[0] == True:
-        return (True, run_command(path[1]))
+def get_command(cmd: list[str], inputfd=0, outputfd=1):
+    if cmd[0] in commands.BUILTINS:
+        builtin = commands.BUILTINS[cmd[0]]
 
-    return (False,lambda x: exit(x[0]))
+        if inputfd != 0 or outputfd != 1:
+            def forked_builtin(argv):
+                pid = os.fork()
+                if pid == 0:
+                    if inputfd != 0:
+                        os.dup2(inputfd, 0)
+                    if outputfd != 1:
+                        os.dup2(outputfd, 1)
+                    try:
+                        exit_code = builtin(argv)
+                    except Exception:
+                        exit_code = 1
+                    os._exit(exit_code)
+                return pid
+            return (True, forked_builtin)
+
+        return (True, builtin)
+
+    path = commands.find_command(cmd[0])
+    if path[0]:
+        return (True, run_command(path[1], inputfd, outputfd))
+
+    return (False, lambda x: 127)
 
 TAB_COUNT = 0
 LAST_BUFFER = ""
@@ -96,16 +123,67 @@ def main():
     while True:
         sys.stdout.flush()
         sys.stderr.flush()
-        try: uin = shlex.split(input("$ "))
+        try:
+            raw = input("$ ")
+            raw = raw.replace("|", " | ")
+            uin = shlex.split(raw)
         except EOFError: return
         if not uin: continue
-        cmd = get_command(uin)
 
-        if cmd[0] == True:
-            cmd[1](uin)
+        if '|' in uin:
+            segments = []
+            tmp = []
+            for token in uin:
+                if token == '|':
+                    segments.append(tmp)
+                    tmp = []
+                else:
+                    tmp.append(token)
+            segments.append(tmp)
+
+            pids = []
+            prev_read = None
+
+            for i, segment in enumerate(segments):
+                if i < len(segments) - 1:
+                    read_fd, write_fd = os.pipe()
+                else:
+                    read_fd, write_fd = None, None
+
+                is_valid, cmd_fn = get_command(
+                    segment,
+                    inputfd=prev_read if prev_read is not None else 0,
+                    outputfd=write_fd if write_fd is not None else 1
+                )
+
+                if not is_valid:
+                    sys.stdout.write(f"{segment[0]}: command not found\n")
+                    break
+
+                pid = cmd_fn(segment)
+                pids.append(pid)
+
+                if prev_read is not None:
+                    os.close(prev_read)
+                if write_fd is not None:
+                    os.close(write_fd)
+
+                prev_read = read_fd
+
+            for pid in pids:
+                os.waitpid(pid, 0)
             continue
+            
         
-        sys.stdout.write(f"{uin[0]}: command not found\n")
+        else:
+            is_valid, cmd_fn = get_command(uin)
 
+            if not is_valid:
+                sys.stdout.write(f"{uin[0]}: command not found\n")
+                continue
+
+            pid = cmd_fn(uin)
+            os.waitpid(pid, 0)
+    
 if __name__ == "__main__":
     main()
