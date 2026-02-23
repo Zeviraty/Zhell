@@ -36,7 +36,10 @@ CACHED_MATCHES = []
 def completer(text: str, state: int):
     global TAB_COUNT
 
+    if state != 0: return None
+
     matches = []
+    if readline.get_begidx() != 0: return None
 
     for cmd in commands.BUILTINS.keys():
         if cmd.startswith(text):
