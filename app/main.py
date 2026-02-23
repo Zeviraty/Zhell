@@ -119,6 +119,8 @@ def main():
     readline.parse_and_bind('tab: complete')
     readline.set_completer_delims(" \t\n;")
     readline.set_auto_history(True)
+    histfile = os.environ.get("HISTFILE")
+    if histfile != None and histfile.strip() != "": commands.history(["history","-r",histfile])
     while True:
         sys.stdout.flush()
         sys.stderr.flush()
@@ -188,6 +190,8 @@ def main():
                     os.waitpid(result, 0)
                 except ChildProcessError:
                     pass
-    
+
 if __name__ == "__main__":
     main()
+    histfile = os.environ.get("HISTFILE")
+    if histfile != None and histfile.strip() != "": commands.history(["history","-r",histfile])

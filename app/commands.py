@@ -33,6 +33,8 @@ def which(argv):
 
 def shell_exit(argv):
     if len(argv) < 2: exit(0)
+    histfile = os.environ.get("HISTFILE")
+    if histfile != None and histfile.strip() != "": history(["history","-w",histfile])
     exit(argv[1])
 
 def echo(argv):
