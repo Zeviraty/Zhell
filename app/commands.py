@@ -1,6 +1,7 @@
 import sys
 from typing import Callable
 import os
+import readline
 
 CACHED_PATH: str | None = None
 PATH_FILES: dict[str,list[str]] = {}
@@ -57,12 +58,20 @@ def cd(argv):
         return 1
     return 0
 
+def history(argv):
+    length = readline.get_current_history_length()
+
+    for i in range(1, length + 1):
+        sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
+    return 0
+
 BUILTINS: dict[str,Callable] = {
     "which": which,
     "exit": shell_exit,
     "echo": echo,
     "pwd": pwd,
-    "cd": cd
+    "cd": cd,
+    "history": history
 }
 
 def shell_type(argv):
