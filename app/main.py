@@ -34,17 +34,7 @@ LAST_BUFFER = ""
 CACHED_MATCHES = []
 
 def completer(text: str, state: int):
-    global TAB_COUNT, LAST_BUFFER, CACHED_MATCHES
-
-    if state != 0: return None
-
-    buffer = readline.get_line_buffer()
-
-    if readline.get_begidx() != 0: return None
-
-    if buffer != LAST_BUFFER:
-        TAB_COUNT = 0
-        LAST_BUFFER = buffer
+    global TAB_COUNT
 
     matches = []
 
@@ -58,45 +48,32 @@ def completer(text: str, state: int):
                 matches.append(file)
 
     matches = sorted(set(matches))
-    CACHED_MATCHES = matches
 
     if not matches:
         return None
 
     if len(matches) == 1:
-        TAB_COUNT = 0
         return matches[0] + " "
 
-    TAB_COUNT += 1
-
-    if TAB_COUNT == 1:
+    if TAB_COUNT == 0:
         sys.stdout.write("\x07")
-        sys.stdout.flush()
-        return None
-
-    if TAB_COUNT == 2:
-        sys.stdout.write("\n")
-        sys.stdout.write("  ".join(matches) + "\n")
-        sys.stdout.write("$ " + buffer)
-        sys.stdout.flush()
+        TAB_COUNT = 1
+    else:
         TAB_COUNT = 0
-        return None
+        clean_matches = [m.rstrip() for m in matches]
+        sys.stdout.write("\n"+"  ".join(clean_matches)+"\n")
+        sys.stdout.write("$ " + readline.get_line_buffer())
+        sys.stdout.flush()
 
     return None
 
-def display_matches(substitution, matches, _):
-    print("display_matches")
-    sys.stdout.write("\n")
-    sys.stdout.write("  ".join(sorted(matches)) + "\n")
-    sys.stdout.write("$ " + readline.get_line_buffer())
-    sys.stdout.flush()
+
 
 def main():
     commands.get_path_files()
     readline.set_completer(completer)
-    readline.parse_and_bind('tab: rl_complete')
+    readline.parse_and_bind('tab: complete')
     readline.set_completer_delims(" \t\n;")
-    #readline.set_completion_display_matches_hook(display_matches)
     while True:
         sys.stdout.flush()
         sys.stderr.flush()
