@@ -120,7 +120,7 @@ def main():
     readline.set_completer_delims(" \t\n;")
     readline.set_auto_history(True)
     histfile = os.environ.get("HISTFILE")
-    if histfile != None and histfile.strip() != "": commands.history(["history","-r",histfile])
+    if histfile != None and histfile.strip() != "" and os.path.exists(histfile): commands.history(["history","-r",histfile])
     while True:
         sys.stdout.flush()
         sys.stderr.flush()

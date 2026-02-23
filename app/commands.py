@@ -65,6 +65,7 @@ last_appended = 0
 def history(argv):
     global last_appended
     length = readline.get_current_history_length()
+    print(argv)
     if len(argv) < 2:
         for i in range(1,length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
     elif argv[1].isnumeric():
