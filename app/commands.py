@@ -74,7 +74,7 @@ def history(argv):
     elif argv[1] == '-a':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
         if not os.path.exists(argv[2]): sys.stdout.write("file does not exist"); return 1
-        readline.append_history_file(length,argv[2])
+        readline.append_history_file(length+1,argv[2])
     return 0
 
 BUILTINS: dict[str,Callable] = {
