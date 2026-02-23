@@ -5,6 +5,17 @@ import os
 import shlex
 import readline
 
+def lcp(v: list[str]) -> str:
+    ans=""
+    v=sorted(v)
+    first=v[0]
+    last=v[-1]
+    for i in range(min(len(first),len(last))):
+        if(first[i]!=last[i]):
+            return ans
+        ans+=first[i]
+    return ans 
+
 def run_command(path:str) -> Callable[[list[str]],int]:
     def command(argv:list[str]) -> int:
         pid = os.fork()
@@ -39,6 +50,7 @@ def completer(text: str, state: int):
     if state != 0: return None
 
     matches = []
+
     if readline.get_begidx() != 0: return None
 
     for cmd in commands.BUILTINS.keys():
@@ -57,6 +69,10 @@ def completer(text: str, state: int):
 
     if len(matches) == 1:
         return matches[0] + " "
+
+    prefix = lcp(matches)
+    if prefix != text:
+        return prefix
 
     if TAB_COUNT == 0:
         sys.stdout.write("\x07")
