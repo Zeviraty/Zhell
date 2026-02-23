@@ -58,7 +58,10 @@ def cd(argv):
         return 1
     return 0
 
+last_appended = 0
+
 def history(argv):
+    global last_appended
     length = readline.get_current_history_length()
     if len(argv) < 2:
         for i in range(1,length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
@@ -74,7 +77,10 @@ def history(argv):
     elif argv[1] == '-a':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
         if not os.path.exists(argv[2]): sys.stdout.write("file does not exist"); return 1
-        readline.append_history_file(length+1,argv[2])
+        new_entries = length - last_appended
+        if new_entries > 0:
+            readline.append_history_file(new_entries, argv[2])
+            last_appended = length
     return 0
 
 BUILTINS: dict[str,Callable] = {
