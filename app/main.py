@@ -194,4 +194,4 @@ def main():
 if __name__ == "__main__":
     main()
     histfile = os.environ.get("HISTFILE")
-    if histfile != None and histfile.strip() != "": commands.history(["history","-r",histfile])
+    if histfile != None and histfile.strip() != "": commands.history(["history","-w",histfile])
