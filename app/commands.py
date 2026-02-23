@@ -70,7 +70,6 @@ def history(argv):
         readline.read_history_file(argv[2])
     elif argv[1] == '-w':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
-        if not os.path.exists(argv[2]): sys.stdout.write("file does not exist"); return 1
         readline.write_history_file(argv[2])
     elif argv[1] == '-a':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
