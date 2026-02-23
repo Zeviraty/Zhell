@@ -60,9 +60,10 @@ def cd(argv):
 
 def history(argv):
     length = readline.get_current_history_length()
-
-    for i in range(1, length + 1):
-        sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
+    if len(argv) < 2:
+        for i in range(1,length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
+    else:
+        for i in range(length-int(argv[1])+1,length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
     return 0
 
 BUILTINS: dict[str,Callable] = {
