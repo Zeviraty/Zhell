@@ -182,8 +182,13 @@ def main():
                 sys.stdout.write(f"{uin[0]}: command not found\n")
                 continue
 
-            pid = cmd_fn(uin)
-            os.waitpid(pid, 0)
+            result = cmd_fn(uin)
+
+            if isinstance(result, int) and result > 0:
+                try:
+                    os.waitpid(result, 0)
+                except ChildProcessError:
+                    pass
     
 if __name__ == "__main__":
     main()
