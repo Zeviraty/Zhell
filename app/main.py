@@ -215,7 +215,7 @@ def main():
             if loc is None: continue
             cmd = uin[:loc]
             file= uin[loc+1:][0]
-            ffd = os.open(file,os.O_CREAT|os.O_WRONLY|os.O_TRUNC)
+            ffd = os.open(file,os.O_CREAT | os.O_WRONLY | os.O_APPEND, 0o644)
             if fd == 1: valid, cmd_fn = get_command(cmd,outputfd=ffd)
             elif fd == 2: valid, cmd_fn = get_command(cmd,outputerrfd=ffd)
             else: continue
