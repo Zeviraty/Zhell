@@ -84,16 +84,18 @@ def completer(text: str, state: int):
 
     matches = []
 
-    if readline.get_begidx() != 0: return None
+    if readline.get_begidx() != 0:
+        for file in os.listdir():
+            if file.startswith(text): matches.append(file)            
+    else:
+        for cmd in commands.BUILTINS.keys():
+            if cmd.startswith(text):
+                matches.append(cmd)
 
-    for cmd in commands.BUILTINS.keys():
-        if cmd.startswith(text):
-            matches.append(cmd)
-
-    for _, files in commands.get_path_files().items():
-        for file in files:
-            if file.startswith(text):
-                matches.append(file)
+        for _, files in commands.get_path_files().items():
+            for file in files:
+                if file.startswith(text):
+                    matches.append(file)
 
     matches = sorted(set(matches))
 

@@ -17,6 +17,8 @@ def get_path_files() -> dict[str,list[str]]:
         if not os.path.exists(directory): continue
         PATH_FILES[directory] = os.listdir(directory)
 
+    PATH_FILES['./'] = os.listdir('.')
+
     CACHED_PATH = path
     return PATH_FILES
 
