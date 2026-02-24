@@ -32,9 +32,9 @@ def which(argv):
     return 0
 
 def shell_exit(argv):
-    if len(argv) < 2: exit(0)
     histfile = os.environ.get("HISTFILE")
     if histfile != None and histfile.strip() != "": history(["history","-w",histfile])
+    if len(argv) < 2: exit(0)
     exit(argv[1])
 
 def echo(argv):
@@ -79,7 +79,8 @@ def history(argv):
                     readline.add_history(line)
     elif argv[1] == '-w':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
-        readline.write_history_file(argv[2])
+        with open(argv[2], 'w') as f:
+            for i in range(1,length+1): f.write(f"{readline.get_history_item(i)}\n")
     elif argv[1] == '-a':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
         if not os.path.exists(argv[2]): sys.stdout.write("file does not exist"); return 1
