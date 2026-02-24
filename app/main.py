@@ -26,14 +26,14 @@ def run_command(path: str, inputfd=0, outputfd=1, outputerrfd=2):
                     os.dup2(inputfd, 0)
                 if outputfd != 1:
                     os.dup2(outputfd, 1)
-                if outputerrfd != 1:
+                if outputerrfd != 2:
                     os.dup2(outputerrfd, 2)
 
                 if inputfd not in (0, 1, 2):
                     os.close(inputfd)
                 if outputfd not in (0, 1, 2):
                     os.close(outputfd)
-                if outputfd not in (0, 1,2 ):
+                if outputerrfd not in (0, 1, 2):
                     os.close(outputerrfd)
 
                 os.execv(path, argv)
@@ -55,8 +55,8 @@ def get_command(cmd: list[str], inputfd=0, outputfd=1, outputerrfd=2):
                         os.dup2(inputfd, 0)
                     if outputfd != 1:
                         os.dup2(outputfd, 1)
-                    if outputerrfd != 1:
-                        os.dup2(outputfd, 2)
+                    if outputerrfd != 2:
+                        os.dup2(outputerrfd, 2)
                     try:
                         exit_code = builtin(argv)
                     except Exception:
@@ -69,7 +69,7 @@ def get_command(cmd: list[str], inputfd=0, outputfd=1, outputerrfd=2):
 
     path = commands.find_command(cmd[0])
     if path[0]:
-        return (True, run_command(path[1], inputfd, outputfd))
+        return (True, run_command(path[1], inputfd, outputfd,outputerrfd))
 
     return (False, lambda x: 127)
 
@@ -215,7 +215,7 @@ def main():
             if loc is None: continue
             cmd = uin[:loc]
             file= uin[loc+1:][0]
-            ffd = os.open(file,os.O_CREAT|os.O_WRONLY)
+            ffd = os.open(file,os.O_CREAT|os.O_WRONLY|os.O_TRUNC)
             if fd == 1: valid, cmd_fn = get_command(cmd,outputfd=ffd)
             elif fd == 2: valid, cmd_fn = get_command(cmd,outputerrfd=ffd)
             else: continue
