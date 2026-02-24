@@ -188,7 +188,7 @@ def main():
             elif '1>' in uin: loc=uin.index('1>')
             elif '2>' in uin: loc=uin.index('2>'); fd = 2
             if loc is None: continue
-            cmd = uin[:loc+1]
+            cmd = uin[:loc]
             file= uin[loc+1:][0]
             ffd = os.open(file,os.O_CREAT|os.O_WRONLY)
             if fd == 1: valid, cmd_fn = get_command(cmd,outputfd=ffd)
@@ -199,7 +199,7 @@ def main():
                 sys.stdout.write(f"{uin[0]}: command not found\n")
                 continue
             
-            result = cmd_fn(uin)
+            result = cmd_fn(cmd)
 
             if isinstance(result, int) and result > 0:
                 try:
@@ -213,7 +213,7 @@ def main():
             elif '1>>' in uin: loc=uin.index('1>>')
             elif '2>>' in uin: loc=uin.index('2>>'); fd = 2
             if loc is None: continue
-            cmd = uin[:loc+1]
+            cmd = uin[:loc]
             file= uin[loc+1:][0]
             ffd = os.open(file,os.O_CREAT|os.O_WRONLY)
             if fd == 1: valid, cmd_fn = get_command(cmd,outputfd=ffd)
@@ -223,7 +223,7 @@ def main():
                 sys.stdout.write(f"{uin[0]}: command not found\n")
                 continue
             
-            result = cmd_fn(uin)
+            result = cmd_fn(cmd)
 
             if isinstance(result, int) and result > 0:
                 try:
