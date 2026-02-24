@@ -16,7 +16,7 @@ def lcp(v: list[str]) -> str:
         ans+=first[i]
     return ans 
 
-def run_command(path: str, inputfd=0, outputfd=1):
+def run_command(path: str, inputfd=0, outputfd=1, outputerrfd=2):
     def command(argv: list[str]) -> int:
         pid = os.fork()
 
@@ -26,11 +26,15 @@ def run_command(path: str, inputfd=0, outputfd=1):
                     os.dup2(inputfd, 0)
                 if outputfd != 1:
                     os.dup2(outputfd, 1)
+                if outputerrfd != 1:
+                    os.dup2(outputerrfd, 2)
 
-                if inputfd not in (0, 1):
+                if inputfd not in (0, 1, 2):
                     os.close(inputfd)
-                if outputfd not in (0, 1):
+                if outputfd not in (0, 1, 2):
                     os.close(outputfd)
+                if outputfd not in (0, 1,2 ):
+                    os.close(outputerrfd)
 
                 os.execv(path, argv)
             except Exception:
@@ -39,11 +43,11 @@ def run_command(path: str, inputfd=0, outputfd=1):
             return pid
     return command
 
-def get_command(cmd: list[str], inputfd=0, outputfd=1):
+def get_command(cmd: list[str], inputfd=0, outputfd=1, outputerrfd=2):
     if cmd[0] in commands.BUILTINS:
         builtin = commands.BUILTINS[cmd[0]]
 
-        if inputfd != 0 or outputfd != 1:
+        if inputfd != 0 or outputfd != 1 or outputerrfd != 2:
             def forked_builtin(argv):
                 pid = os.fork()
                 if pid == 0:
@@ -51,6 +55,8 @@ def get_command(cmd: list[str], inputfd=0, outputfd=1):
                         os.dup2(inputfd, 0)
                     if outputfd != 1:
                         os.dup2(outputfd, 1)
+                    if outputerrfd != 1:
+                        os.dup2(outputfd, 2)
                     try:
                         exit_code = builtin(argv)
                     except Exception:
@@ -174,8 +180,56 @@ def main():
             for pid in pids:
                 os.waitpid(pid, 0)
             continue
+
+        elif '>' in uin or '1>' in uin or '2>' in uin:
+            fd = 1
+            loc = None
+            if '>' in uin: loc=uin.index('>')
+            elif '1>' in uin: loc=uin.index('1>')
+            elif '2>' in uin: loc=uin.index('2>'); fd = 2
+            if loc is None: continue
+            cmd = uin[:loc+1]
+            file= uin[loc+1:][0]
+            ffd = os.open(file,os.O_CREAT|os.O_WRONLY)
+            if fd == 1: valid, cmd_fn = get_command(cmd,outputfd=ffd)
+            elif fd == 2: valid, cmd_fn = get_command(cmd,outputerrfd=ffd)
+            else: continue
             
-        
+            if not valid:
+                sys.stdout.write(f"{uin[0]}: command not found\n")
+                continue
+            
+            result = cmd_fn(uin)
+
+            if isinstance(result, int) and result > 0:
+                try:
+                    os.waitpid(result, 0)
+                except ChildProcessError:
+                    pass
+        elif '>>' in uin or '1>>' in uin or '2>>' in uin:
+            fd = 1
+            loc = None
+            if '>>' in uin: loc=uin.index('>>')
+            elif '1>>' in uin: loc=uin.index('1>>')
+            elif '2>>' in uin: loc=uin.index('2>>'); fd = 2
+            if loc is None: continue
+            cmd = uin[:loc+1]
+            file= uin[loc+1:][0]
+            ffd = os.open(file,os.O_CREAT|os.O_WRONLY)
+            if fd == 1: valid, cmd_fn = get_command(cmd,outputfd=ffd)
+            elif fd == 2: valid, cmd_fn = get_command(cmd,outputerrfd=ffd)
+            else: continue
+            if not valid:
+                sys.stdout.write(f"{uin[0]}: command not found\n")
+                continue
+            
+            result = cmd_fn(uin)
+
+            if isinstance(result, int) and result > 0:
+                try:
+                    os.waitpid(result, 0)
+                except ChildProcessError:
+                    pass
         else:
             is_valid, cmd_fn = get_command(uin)
 
