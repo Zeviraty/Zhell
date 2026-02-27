@@ -85,8 +85,17 @@ def completer(text: str, state: int):
     matches = []
 
     if readline.get_begidx() != 0:
-        for file in os.listdir():
-            if file.startswith(text): matches.append(file)            
+        path = "."
+        name = text
+        parts = text.split(os.sep)
+        while '' in parts: parts.remove('')
+        if len(parts) > 1:
+            if os.path.isdir(os.sep.join(parts)): path = os.sep.join(parts); name = ''
+            else: path = os.sep.join(parts[:-1]); name = parts[-1]
+        for file in os.listdir(path):
+            if file.startswith(name.strip()):
+                if os.path.isdir(path+os.sep+file): file += os.sep
+                matches.append(file)
     else:
         for cmd in commands.BUILTINS.keys():
             if cmd.startswith(text):
