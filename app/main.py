@@ -111,8 +111,11 @@ def completer(text: str, state: int):
     if not matches:
         return None
 
-    if len(matches) == 1:
-        return matches[0] + " "
+    if state < len(matches):
+        if len(matches) == 1:
+            return matches[state] + " "
+        else:
+            return matches[state]
 
     prefix = lcp(matches)
     if prefix != text:
