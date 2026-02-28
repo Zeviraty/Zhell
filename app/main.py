@@ -96,7 +96,12 @@ def completer(text: str, state: int):
         for file in os.listdir(path):
             if file.startswith(name.strip()):
                 if os.path.isdir(path+os.sep+file): file += os.sep
-                matches.append(path+os.sep+file)
+                full_path = os.path.join(path, file)
+
+                if path in (".", "./"):
+                    matches.append(file)
+                else:
+                    matches.append(full_path)
     else:
         for cmd in commands.BUILTINS.keys():
             if cmd.startswith(text):
