@@ -89,7 +89,7 @@ def completer(text: str, state: int):
         name = text
         parts = text.split(os.sep)
         while '' in parts: parts.remove('')
-        if os.path.isdir(os.sep.join(parts)) and (not os.sep.join(parts).endswith('/')):
+        if os.path.isdir(os.sep.join(parts)) and (not text.endswith(os.sep)):
             return os.sep.join(parts)+'/'
         if os.path.isdir(os.sep.join(parts)) and os.sep.join(parts) != '.':
             path = os.sep.join(parts); name = ''
