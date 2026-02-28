@@ -70,7 +70,7 @@ def history(argv):
     if len(argv) < 2:
         for i in range(1,length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
     elif argv[1].isnumeric():
-        for i in range(length-int(argv[1]),length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
+        for i in range(length-int(argv[1])+1,length+1): sys.stdout.write(f"    {i}  {readline.get_history_item(i)}\n")
     elif argv[1] == '-r':
         if len(argv) < 3: sys.stdout.write("Missing path to history file"); return 1
         if not os.path.exists(argv[2]): sys.stdout.write("file does not exist"); return 1
