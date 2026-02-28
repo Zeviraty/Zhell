@@ -85,17 +85,18 @@ def completer(text: str, state: int):
     matches = []
 
     if readline.get_begidx() != 0:
-        path = "."
+        path = "./"
         name = text
         parts = text.split(os.sep)
         while '' in parts: parts.remove('')
-        if len(parts) > 1:
-            if os.path.isdir(os.sep.join(parts)): path = os.sep.join(parts); name = ''
-            else: path = os.sep.join(parts[:-1]); name = parts[-1]
+        if os.path.isdir(os.sep.join(parts)) and os.sep.join(parts) != '.':
+            path = os.sep.join(parts); name = ''
+        elif len(parts) > 1:
+            path = os.sep.join(parts[:-1]); name = parts[-1]
         for file in os.listdir(path):
             if file.startswith(name.strip()):
                 if os.path.isdir(path+os.sep+file): file += os.sep
-                matches.append(file)
+                matches.append(path+os.sep+file)
     else:
         for cmd in commands.BUILTINS.keys():
             if cmd.startswith(text):
@@ -111,11 +112,9 @@ def completer(text: str, state: int):
     if not matches:
         return None
 
-    if state < len(matches):
-        if len(matches) == 1:
-            return matches[state] + " "
-        else:
-            return matches[state]
+    if len(matches) == 1:
+        if matches[0].endswith("/"): return matches[0]
+        else: return matches[0] + " "
 
     prefix = lcp(matches)
     if prefix != text:
